@@ -3,18 +3,31 @@
 `go mod tidy
 go build -o dhcp main.go`
 
-server - main.go
-client - client.go
+server -> main.go
 
-go run main.go
-go run client.go
+client -> client.go
+
+`go run main.go`
+
+`go run client.go`
 
 
-Docker Run
+**Docker Run**
 
-docker images
-docker run -p 69:69/udp dhcp_example
-docker run --entrypoint /app/bin/client dhcp_example
+`docker images`
+
+`docker run -p 69:69/udp dhcp_example`
+
+`docker run --entrypoint /app/bin/client dhcp_example`
+
+**Docker repo**
+
+`https://hub.docker.com/r/manishjha8909/dhcp_example`
+
+pull from docker hub 
+
+`docker pull manishjha8909/dhcp_example`
+
 
 # MTP_SNF
 

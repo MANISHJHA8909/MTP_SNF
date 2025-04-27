@@ -6,15 +6,19 @@ spec:
   template:
     spec:
       containers:
-        - image: dhcp-serverless:latest
+        - image: docker.io/manishjha8909/dhcp-serverless:latest # Explicit registry
           env:
             - name: REDIS_HOST
-              value: "redis-master.redis.svc.cluster.local" 
+              value: "redis-master.redis.svc.cluster.local"
           ports:
             - containerPort: 8080
+          # REMOVE imagePullPolicy - Knative ignores this field!
+          securityContext: # Recommended for production
+            allowPrivilegeEscalation: false
+            capabilities:
+              drop: ["ALL"]
           resources:
             limits:
               cpu: 1000m
               memory: 512Mi
-      imagePullSecrets:
-        - name: your-registry-cred
+      # REMOVE imagePullSecrets if your Docker Hub repo is public

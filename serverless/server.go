@@ -8,6 +8,7 @@ import (
 	"net"
 	"net/http"
 	"os"
+	"time"
 
 	"github.com/redis/go-redis/v9"
 )
@@ -18,10 +19,9 @@ var (
 )
 
 func init() {
-	// Initialize Redis client
 	redisAddr := os.Getenv("REDIS_ADDR")
 	if redisAddr == "" {
-		redisAddr = "redis-master.redis.svc.cluster.local:6379" // Fallback
+		redisAddr = "redis-master.redis.svc.cluster.local:6379"
 	}
 	redisPassword := os.Getenv("REDIS_PASSWORD")
 
@@ -31,13 +31,11 @@ func init() {
 		DB:       0,
 	})
 
-	// Test Redis connection
 	if _, err := rdb.Ping(ctx).Result(); err != nil {
 		log.Fatalf("Failed to connect to Redis at %s: %v", redisAddr, err)
 	}
 	log.Println("Connected to Redis successfully")
 
-	// Initialize IP pool if not exists
 	if exists, _ := rdb.Exists(ctx, "dhcp:ip_pool_initialized").Result(); exists == 0 {
 		initIPPool()
 	}
@@ -55,7 +53,6 @@ func initIPPool() {
 	start := ipToInt(net.ParseIP(startIP))
 	end := ipToInt(net.ParseIP(endIP))
 
-	// Store available IPs in a Redis set
 	for i := start; i <= end; i++ {
 		ip := intToIP(i)
 		rdb.SAdd(ctx, "dhcp:available_ips", ip.String())
@@ -83,8 +80,9 @@ func allocateIP(ctx context.Context, mac string) (string, error) {
 	key := "dhcp:lease:" + mac
 
 	// Check existing lease
-	if ip, err := rdb.Get(ctx, key).Result(); err == nil {
-		return ip, nil
+	if lease, err := rdb.Get(ctx, key).Result(); err == nil {
+		log.Printf("Found existing lease for MAC %s: %s", mac, lease)
+		return lease, nil
 	} else if err != redis.Nil {
 		return "", fmt.Errorf("redis error: %v", err)
 	}
@@ -97,32 +95,46 @@ func allocateIP(ctx context.Context, mac string) (string, error) {
 		return "", fmt.Errorf("failed to get IP from pool: %v", err)
 	}
 
-	// Store lease with 1-hour TTL
-	if err := rdb.SetEx(ctx, key, ip, 3600).Err(); err != nil {
-		// Return IP to pool if storage fails
+	// Prepare lease data
+	leaseDuration := time.Duration(3600) * time.Second
+	expires := time.Now().Add(leaseDuration).Unix()
+	leaseData := map[string]interface{}{
+		"ip":      ip,
+		"mac":     mac,
+		"expires": expires,
+	}
+	leaseJSON, err := json.Marshal(leaseData)
+	if err != nil {
+		return "", fmt.Errorf("failed to marshal lease data: %v", err)
+	}
+
+	// Store lease
+	if err := rdb.SetEx(ctx, key, string(leaseJSON), leaseDuration).Err(); err != nil {
 		rdb.SAdd(ctx, "dhcp:available_ips", ip)
-		return "", fmt.Errorf("failed to store lease: %v", err)
+		return "", fmt.Errorf("failed to store lease: %v", mac, err)
 	}
 
 	// Store reverse mapping
-	rdb.SetEx(ctx, "dhcp:mac:"+ip, mac, 3600)
+	if err := rdb.SetEx(ctx, "dhcp:mac:"+ip, mac, leaseDuration).Err(); err != nil {
+		rdb.Del(ctx, key)
+		rdb.SAdd(ctx, "dhcp:available_ips", ip)
+		return "", fmt.Errorf("failed to store reverse mapping: %v", err)
+	}
 
+	log.Printf("Allocated IP %s for MAC %s", ip, mac)
 	return ip, nil
 }
 
 func releaseIP(ctx context.Context, ip string) error {
-	// Get MAC for this IP
 	mac, err := rdb.GetDel(ctx, "dhcp:mac:"+ip).Result()
 	if err != nil {
 		return fmt.Errorf("failed to get MAC for IP %s: %v", ip, err)
 	}
 
-	// Delete lease
 	if err := rdb.Del(ctx, "dhcp:lease:"+mac).Err(); err != nil {
 		return fmt.Errorf("failed to delete lease: %v", err)
 	}
 
-	// Return IP to pool
 	if err := rdb.SAdd(ctx, "dhcp:available_ips", ip).Err(); err != nil {
 		return fmt.Errorf("failed to return IP to pool: %v", err)
 	}
@@ -156,8 +168,17 @@ func main() {
 			})
 
 		case "REQUEST":
-			storedIP, err := rdb.Get(ctx, "dhcp:lease:"+req.MAC).Result()
-			if err != nil || storedIP != req.RequestedIP {
+			storedLease, err := rdb.Get(ctx, "dhcp:lease:"+req.MAC).Result()
+			if err != nil {
+				http.Error(w, "Invalid lease", http.StatusBadRequest)
+				return
+			}
+			var leaseData map[string]interface{}
+			if err := json.Unmarshal([]byte(storedLease), &leaseData); err != nil {
+				http.Error(w, "Failed to parse lease", http.StatusInternalServerError)
+				return
+			}
+			if leaseData["ip"] != req.RequestedIP {
 				http.Error(w, "Invalid lease", http.StatusBadRequest)
 				return
 			}

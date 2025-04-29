@@ -32,3 +32,6 @@ pull from docker hub
 # MTP_SNF
 
 Master's Thesis Project
+curl -X POST http://dhcp-service.default.knative.local -d '{"type":"DISCOVER","mac":"11:22:33:44:55:66"}'
+
+http://dhcp-service.default.knative.local

@@ -2,23 +2,34 @@ apiVersion: serving.knative.dev/v1
 kind: Service
 metadata:
   name: dhcp-service
+  namespace: default
 spec:
   template:
     spec:
       containers:
-        - image: docker.io/manishjha8909/dhcp-serverless:latest # Explicit registry
+        - image: docker.io/manishjha8909/dhcp-serverless:latest
           env:
-            - name: REDIS_HOST
-              value: "redis-master.redis.svc.cluster.local"
+            - name: REDIS_ADDR
+              value: "redis-master.redis.svc.cluster.local:6379"
+            - name: REDIS_PASSWORD
+              valueFrom:
+                secretKeyRef:
+                  name: redis
+                  key: redis-password
+            - name: IP_POOL_START
+              value: "192.168.1.100"
+            - name: IP_POOL_END
+              value: "192.168.1.200"
           ports:
             - containerPort: 8080
-          # REMOVE imagePullPolicy - Knative ignores this field!
-          securityContext: # Recommended for production
+          securityContext:
             allowPrivilegeEscalation: false
+            runAsNonRoot: true # Added
+            seccompProfile: # Added
+              type: RuntimeDefault
             capabilities:
               drop: ["ALL"]
           resources:
             limits:
               cpu: 1000m
               memory: 512Mi
-      # REMOVE imagePullSecrets if your Docker Hub repo is public

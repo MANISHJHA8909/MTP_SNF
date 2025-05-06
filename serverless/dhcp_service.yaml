@@ -5,6 +5,10 @@ metadata:
   namespace: default
 spec:
   template:
+    metadata:
+      annotations:
+        autoscaling.knative.dev/minScale: "1"
+        dhcp/update-time: "{{REPLACE_WITH_TIMESTAMP}}" # Patch this manually when needed
     spec:
       containers:
         - image: docker.io/manishjha8909/dhcp-serverless:latest
@@ -14,7 +18,7 @@ spec:
             - name: REDIS_PASSWORD
               valueFrom:
                 secretKeyRef:
-                  name: redis
+                  name: redis # Secret must be in 'default' namespace
                   key: redis-password
             - name: IP_POOL_START
               value: "192.168.1.100"
@@ -24,10 +28,10 @@ spec:
             - containerPort: 8080
           securityContext:
             allowPrivilegeEscalation: false
-            seccompProfile:
-              type: RuntimeDefault
             capabilities:
               drop: ["ALL"]
+            seccompProfile:
+              type: RuntimeDefault
           resources:
             limits:
               cpu: 1000m

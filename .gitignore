@@ -1,28 +1,5 @@
-# Ignore compiled binaries
-*.exe
-*.out
-*.o
-*.a
-
-# Ignore Docker-related files
-*.tar
-*.img
-*.bin
-*.dmg
-Dockerfile.*.bak
-docker-compose.override.yml
-
-# Ignore dependency directories
-/vendor/
-node_modules/
-
-# Ignore OS and IDE files
-.DS_Store
-.idea/
-.vscode/
-*.swp
-*.swo
-
-# Ignore other temporary or unnecessary files
-*.log
-*.tmp
+_site
+.sass-cache
+.jekyll-cache
+.jekyll-metadata
+vendor

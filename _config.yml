@@ -18,10 +18,12 @@
 # You can create any custom variable you would like, and they will be accessible
 # in the templates via {{ site.myvariable }}.
 
-title: "Serverless DHCP"
-description: "Comparison of Stateful vs Serverless Network Function"
-baseurl: "" # No subpath
-url: "" # Will be set by GitHub Pages
+title: "Serverless Network Function"
+description: "DHCP: Comparison of Stateful vs Serverless Network Function"
+baseurl: "/MTP_SNF" # This matches your repo name exactly
+url: "https://manishjha8909.github.io"
+permalink: pretty
+
 theme: minima
 minima:
   skin: classic

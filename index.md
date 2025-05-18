@@ -4,7 +4,7 @@ title: Serverless Network Function - DHCP
 ---
 
 <head>
-  <link rel="stylesheet" href="{{ '/assets/style.css' | relative_url }}">
+  <link rel="stylesheet" href="{{ site.baseurl }}/assets/style.css">
 </head>
 
 <div style="text-align: center;">
@@ -31,7 +31,7 @@ We analyze latency, resource usage, and cold start time.
 
 ## 📊 Architecture Diagram
 
-<img src="/assets/images/architecture.png" alt="Architecture Diagram" />
+<img src="{{ site.baseurl }}/assets/images/architecture.png" alt="Architecture Diagram" />
 
 ---
 

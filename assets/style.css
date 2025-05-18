@@ -1,0 +1,43 @@
+/* assets/css/style.css */
+
+body {
+  background-color: #f8faff;
+  color: #222;
+  font-family: "Segoe UI", sans-serif;
+  line-height: 1.6;
+  margin: 2rem;
+}
+
+h1, h2, h3 {
+  color: #003366;
+  font-weight: 600;
+}
+
+a {
+  color: #007acc;
+  text-decoration: none;
+}
+
+a:hover {
+  text-decoration: underline;
+}
+
+code {
+  background-color: #e6f2ff;
+  padding: 0.2rem 0.4rem;
+  border-radius: 4px;
+  font-family: "Courier New", monospace;
+}
+
+pre {
+  background-color: #eef5fb;
+  padding: 1rem;
+  border-left: 4px solid #007acc;
+  overflow-x: auto;
+}
+
+hr {
+  border: none;
+  border-top: 1px solid #ccc;
+  margin: 2rem 0;
+}

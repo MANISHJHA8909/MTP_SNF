@@ -3,24 +3,54 @@ layout: default
 title: Serverless Network Function - DHCP
 ---
 
-# Serverless Network Function (SNF) Project
+<head>
+  <link rel="stylesheet" href="{{ '/assets/style.css' | relative_url }}">
+</head>
 
-This project demonstrates a comparison between **Stateful DHCP** and **Serverless DHCP** implementations using Docker, Redis, Kubernetes, and Knative.
+<div style="text-align: center;">
+  <h1>🚀 Serverless Network Function (SNF) Project</h1>
+  <p><strong>Comparison between Stateful and Serverless DHCP Implementations</strong></p>
+  <a href="#stateful" class="button">Jump to Stateful</a>
+  <a href="#serverless" class="button">Jump to Serverless</a>
+</div>
 
 ---
 
-## 🔧 Stateful Implementation
+## 📌 Overview
 
-- Written in Go.
-- Implements a basic DHCP client and server.
-- Uses UDP sockets and a fixed lease database.
-- Supports Docker-based execution.
+This project demonstrates a side-by-side comparison between **Stateful DHCP** and **Serverless DHCP** implementations using:
 
-**To Run:**
+- ⚙️ Docker
+- 🧠 Redis
+- ☸️ Kubernetes
+- ☁️ Knative
+
+We analyze latency, resource usage, and cold start time.
+
+---
+
+## 📊 Architecture Diagram
+
+<img src="/assets/images/architecture.png" alt="Architecture Diagram" />
+
+---
+
+## 🔧 <a name="stateful"></a>Stateful Implementation
+
+<section>
+<h3>📂 Features:</h3>
+<ul>
+  <li>Written in <strong>Go</strong></li>
+  <li>Basic DHCP server + client</li>
+  <li>Uses <strong>UDP sockets</strong> and a static lease database</li>
+  <li>Deployed with Docker</li>
+</ul>
+
+<h3>▶️ Run Commands:</h3>
 
 ```bash
 go mod tidy
 go build -o dhcp main.go
-go run main.go  # Server
-go run client.go  # Client
+go run main.go     # Start Server
+go run client.go   # Start Client
 ```

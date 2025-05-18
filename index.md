@@ -3,16 +3,24 @@ layout: default
 title: Serverless Network Function - DHCP
 ---
 
-# Serverless Network Function (SNF): DHCP
+# Serverless Network Function (SNF) Project
 
-Welcome to my MTP project showcasing a comparison between Stateful and Serverless implementations of DHCP.
+This project demonstrates a comparison between **Stateful DHCP** and **Serverless DHCP** implementations using Docker, Redis, Kubernetes, and Knative.
 
-## Architecture Diagram
+---
 
-![Architecture](assets/images/entire_archi.png)
+## 🔧 Stateful Implementation
 
-## Results
+- Written in Go.
+- Implements a basic DHCP client and server.
+- Uses UDP sockets and a fixed lease database.
+- Supports Docker-based execution.
 
-![Latency Comparison](assets/images/Result_Graph.png)
+**To Run:**
 
-More details can be found in [results.md](results.md).
+```bash
+go mod tidy
+go build -o dhcp main.go
+go run main.go  # Server
+go run client.go  # Client
+```
